@@ -30,8 +30,49 @@ const ProtectedRoute = ({ children, requiredUserType }) => {
 };
 
 // Home Page Component
+// const Home = () => {
+//   const { user } = useAuth();
+
+//   if (user) {
+//     return <Navigate to={user.userType === 'academy' ? '/academy' : '/student'} />;
+//   }
+
+//   return (
+//     <div className="home-container">
+//       <div className="home-content">
+//         <h1>Welcome to EduPlatform</h1>
+//         <p className="subtitle">Your Educational Content Management System</p>
+        
+//         <div className="features">
+//           <div className="feature-card">
+//             <div className="feature-icon">🏫</div>
+//             <h3>For Academies</h3>
+//             <p>Upload and manage educational PDFs with detailed metadata</p>
+//           </div>
+          
+//           <div className="feature-card">
+//             <div className="feature-icon">👨‍🎓</div>
+//             <h3>For Students</h3>
+//             <p>Search and view educational content with advanced filters</p>
+//           </div>
+//         </div>
+
+//         <div className="cta-buttons">
+//           <a href="/register" className="btn-primary">Get Started</a>
+//           <a href="/login" className="btn-secondary">Login</a>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
 const Home = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // ⏳ Wait for auth to initialize
+  if (loading) {
+    return <div className="loading-screen">Loading...</div>;
+  }
 
   if (user) {
     return <Navigate to={user.userType === 'academy' ? '/academy' : '/student'} />;
@@ -42,14 +83,14 @@ const Home = () => {
       <div className="home-content">
         <h1>Welcome to EduPlatform</h1>
         <p className="subtitle">Your Educational Content Management System</p>
-        
+
         <div className="features">
           <div className="feature-card">
             <div className="feature-icon">🏫</div>
             <h3>For Academies</h3>
             <p>Upload and manage educational PDFs with detailed metadata</p>
           </div>
-          
+
           <div className="feature-card">
             <div className="feature-icon">👨‍🎓</div>
             <h3>For Students</h3>
@@ -65,6 +106,7 @@ const Home = () => {
     </div>
   );
 };
+
 
 function App() {
   return (
