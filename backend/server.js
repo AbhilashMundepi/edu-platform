@@ -57,14 +57,35 @@ const app = express();
 // Connect to MongoDB
 connectDB();
 
-// CORS Configuration - MORE PERMISSIVE FOR FILE STREAMING
-app.use(cors({
-  origin: ['https://edu-platform-kzf5.vercel.app/'], // Add your frontend URLs
+// ✅ FIXED CORS CONFIGURATION
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'https://edu-platform-kzf5.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  exposedHeaders: ['Content-Length', 'Content-Type', 'Content-Disposition'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Length', 'Content-Type', 'Content-Disposition'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
 
 // Middleware
 app.use(express.json());
