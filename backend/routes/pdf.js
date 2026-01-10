@@ -181,6 +181,33 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 // View/Download PDF
+// router.get('/:id/view', auth, async (req, res) => {
+//   try {
+//     const pdf = await PDF.findById(req.params.id);
+
+//     if (!pdf) {
+//       return res.status(404).json({ error: 'PDF not found' });
+//     }
+
+//     // Check if file exists
+//     if (!fs.existsSync(pdf.filePath)) {
+//       return res.status(404).json({ error: 'File not found on server' });
+//     }
+
+//     // Set headers for PDF viewing
+//     res.setHeader('Content-Type', 'application/pdf');
+//     res.setHeader('Content-Disposition', `inline; filename="${pdf.originalName}"`);
+
+//     // Stream the file
+//     const fileStream = fs.createReadStream(pdf.filePath);
+//     fileStream.pipe(res);
+//   } catch (error) {
+//     console.error('View PDF error:', error);
+//     res.status(500).json({ error: 'Failed to view PDF' });
+//   }
+// });
+
+// View/Download PDF
 router.get('/:id/view', auth, async (req, res) => {
   try {
     const pdf = await PDF.findById(req.params.id);
@@ -191,19 +218,36 @@ router.get('/:id/view', auth, async (req, res) => {
 
     // Check if file exists
     if (!fs.existsSync(pdf.filePath)) {
+      console.error('File not found at path:', pdf.filePath);
       return res.status(404).json({ error: 'File not found on server' });
     }
 
-    // Set headers for PDF viewing
+    // Get file stats for Content-Length
+    const stat = fs.statSync(pdf.filePath);
+
+    // Set headers for PDF viewing with CORS
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="${pdf.originalName}"`);
+    res.setHeader('Content-Length', stat.size);
+    res.setHeader('Accept-Ranges', 'bytes');
+    res.setHeader('Cache-Control', 'no-cache');
 
     // Stream the file
     const fileStream = fs.createReadStream(pdf.filePath);
+    
+    fileStream.on('error', (error) => {
+      console.error('File stream error:', error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error reading file' });
+      }
+    });
+
     fileStream.pipe(res);
   } catch (error) {
     console.error('View PDF error:', error);
-    res.status(500).json({ error: 'Failed to view PDF' });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to view PDF' });
+    }
   }
 });
 
