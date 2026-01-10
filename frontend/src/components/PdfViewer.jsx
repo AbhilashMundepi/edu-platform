@@ -254,11 +254,8 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// ✅ Use local worker from node_modules
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// ✅ Use CDN worker (Vercel-compatible)
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const PDFViewer = ({ pdfId, onClose }) => {
   const [numPages, setNumPages] = useState(null);
@@ -267,11 +264,13 @@ const PDFViewer = ({ pdfId, onClose }) => {
   const [error, setError] = useState(null);
   const [pdfBlob, setPdfBlob] = useState(null);
   
+  // ✅ Fixed: Added closing quote
   const API_URL = import.meta.env.VITE_API_URL || 'https://edu-platform-afxb.onrender.com/api';
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const fetchPDF = async () => {
+      const token = localStorage.getItem('token');
+      
       try {
         setLoading(true);
         setError(null);
@@ -306,7 +305,7 @@ const PDFViewer = ({ pdfId, onClose }) => {
       }
     };
 
-    if (pdfId && token) {
+    if (pdfId) {
       fetchPDF();
     }
 
@@ -315,7 +314,7 @@ const PDFViewer = ({ pdfId, onClose }) => {
         URL.revokeObjectURL(pdfBlob);
       }
     };
-  }, [pdfId, token, API_URL]);
+  }, [pdfId, API_URL, pdfBlob]);
 
   function onDocumentLoadSuccess({ numPages }) {
     console.log('PDF loaded successfully, pages:', numPages);
@@ -369,7 +368,7 @@ const PDFViewer = ({ pdfId, onClose }) => {
                 pageNumber={pageNumber}
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
-                width={Math.min(window.innerWidth * 0.8, 800)}
+                width={typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.8, 800) : 800}
               />
             </Document>
           )}
