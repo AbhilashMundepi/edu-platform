@@ -314,7 +314,7 @@ const Register = () => {
       
       // Navigate based on user type
       const destination = result.user.userType === 'academy' ? '/academy' : '/student';
-      navigate(destination);
+      navigate(destination, { replace: true });
       
     } catch (err) {
       const errorMessage = err.response?.data?.error || 'Registration failed. Please try again.';
