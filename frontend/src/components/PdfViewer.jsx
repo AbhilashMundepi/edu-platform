@@ -250,21 +250,12 @@
 
 // export default PDFViewer;
 import React, { useState, useEffect } from 'react';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
-
-// ✅ Use CDN worker (Vercel-compatible)
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const PDFViewer = ({ pdfId, onClose }) => {
-  const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pdfBlob, setPdfBlob] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
   
-  // ✅ Fixed: Added closing quote
   const API_URL = import.meta.env.VITE_API_URL || 'https://edu-platform-afxb.onrender.com/api';
 
   useEffect(() => {
@@ -275,8 +266,6 @@ const PDFViewer = ({ pdfId, onClose }) => {
         setLoading(true);
         setError(null);
 
-        console.log('Fetching PDF with ID:', pdfId);
-        
         const response = await fetch(`${API_URL}/pdfs/${pdfId}/view`, {
           method: 'GET',
           headers: {
@@ -284,19 +273,14 @@ const PDFViewer = ({ pdfId, onClose }) => {
           },
         });
 
-        console.log('Response status:', response.status);
-
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error response:', errorText);
           throw new Error(`Failed to load PDF: ${response.status}`);
         }
 
         const blob = await response.blob();
-        console.log('Blob received:', blob.size, 'bytes');
-
         const blobUrl = URL.createObjectURL(blob);
-        setPdfBlob(blobUrl);
+        setPdfUrl(blobUrl);
+        setLoading(false);
 
       } catch (err) {
         console.error('Error fetching PDF:', err);
@@ -310,31 +294,11 @@ const PDFViewer = ({ pdfId, onClose }) => {
     }
 
     return () => {
-      if (pdfBlob) {
-        URL.revokeObjectURL(pdfBlob);
+      if (pdfUrl) {
+        URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [pdfId, API_URL, pdfBlob]);
-
-  function onDocumentLoadSuccess({ numPages }) {
-    console.log('PDF loaded successfully, pages:', numPages);
-    setNumPages(numPages);
-    setLoading(false);
-  }
-
-  function onDocumentLoadError(error) {
-    console.error('Error loading PDF document:', error);
-    setError('Failed to render PDF. The file may be corrupted.');
-    setLoading(false);
-  }
-
-  const goToPrevPage = () => {
-    setPageNumber((prev) => Math.max(prev - 1, 1));
-  };
-
-  const goToNextPage = () => {
-    setPageNumber((prev) => Math.min(prev + 1, numPages));
-  };
+  }, [pdfId, API_URL]);
 
   return (
     <div className="pdf-viewer-overlay" onClick={onClose}>
@@ -356,45 +320,16 @@ const PDFViewer = ({ pdfId, onClose }) => {
             </div>
           )}
           
-          {pdfBlob && !error && (
-            <Document
-              file={pdfBlob}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-              loading={<div className="loading">Rendering PDF...</div>}
-              error={<div className="error">Failed to render PDF.</div>}
-            >
-              <Page 
-                pageNumber={pageNumber}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-                width={typeof window !== 'undefined' ? Math.min(window.innerWidth * 0.8, 800) : 800}
-              />
-            </Document>
+          {pdfUrl && !error && (
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="100%"
+              style={{ border: 'none', minHeight: '600px' }}
+            />
           )}
         </div>
-        
-        {numPages && !error && (
-          <div className="pdf-viewer-controls">
-            <button 
-              onClick={goToPrevPage} 
-              disabled={pageNumber <= 1}
-              className="btn-secondary"
-            >
-              Previous
-            </button>
-            <span className="page-info">
-              Page {pageNumber} of {numPages}
-            </span>
-            <button 
-              onClick={goToNextPage} 
-              disabled={pageNumber >= numPages}
-              className="btn-secondary"
-            >
-              Next
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
