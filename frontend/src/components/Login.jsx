@@ -89,12 +89,6 @@ const Login = () => {
   const { login, user } = useAuth();
 
   // Redirect if already logged in
-  useEffect(() => {
-    if (user) {
-      console.log('👤 User already logged in, redirecting...');
-      navigate(user.userType === 'academy' ? '/academy' : '/student');
-    }
-  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
