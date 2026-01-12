@@ -155,7 +155,7 @@ const PDFList = ({ isAcademy, refreshTrigger }) => {
   );
 };
 
-// export default PDFList;
+export default PDFList;
 // import React, { useState, useEffect, useCallback } from 'react';
 
 // // Mock API for demonstration
