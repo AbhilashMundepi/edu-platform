@@ -97,7 +97,8 @@ const Login = () => {
     try {
       const userData = await login(email, password);
       
-      toast.success(`Welcome back, ${userData.name}!`);
+      // toast.success(`Welcome back, ${userData.name}!`);
+        toast.success(`Welcome back, ${userData.name || userData.email}!`);
       
       // Navigate based on user type
       const destination = userData.userType === 'academy' ? '/academy' : '/student';
