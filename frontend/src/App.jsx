@@ -277,6 +277,7 @@ function App() {
               <Route 
                 path="/student" 
                 element={
+                         {console.log('🛣️ /student route matched!')}
                   <ProtectedRoute requiredUserType="student">
                     <StudentDashboard />
                   </ProtectedRoute>
