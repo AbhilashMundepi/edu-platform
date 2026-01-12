@@ -90,28 +90,61 @@ const Login = () => {
 
   // Redirect if already logged in
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
 
-    try {
-      const userData = await login(email, password);
+  //   try {
+  //     const userData = await login(email, password);
       
-      // toast.success(`Welcome back, ${userData.name}!`);
-        toast.success(`Welcome back, ${userData.name || userData.email}!`);
+  //     // toast.success(`Welcome back, ${userData.name}!`);
+  //       toast.success(`Welcome back, ${userData.name || userData.email}!`);
       
-      // Navigate based on user type
-      const destination = userData.userType === 'academy' ? '/academy' : '/student';
-      console.log('🚀 Navigating to:', destination);
-      navigate(destination);
+  //     // Navigate based on user type
+  //     const destination = userData.userType === 'academy' ? '/academy' : '/student';
+  //     console.log('🚀 Navigating to:', destination);
+  //     navigate(destination);
       
-    } catch (err) {
-      const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   } catch (err) {
+  //     const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
+  //     toast.error(errorMessage);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+    const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+
+  try {
+    console.log('📤 Submitting login form...');
+    
+    const userData = await login(email, password);
+    
+    console.log('✅ Login complete, userData:', userData);
+    
+    // ✅ Double-check localStorage one more time
+    console.log('🔍 Final localStorage check:');
+    console.log('  - Token:', localStorage.getItem('token')?.substring(0, 20) + '...');
+    console.log('  - User:', localStorage.getItem('user'));
+    
+    toast.success(`Welcome back, ${userData.name || userData.email}!`);
+    
+    // ✅ Use window.location.href to force full page reload
+    // This ensures AuthContext re-initializes with the saved localStorage data
+    const destination = userData.userType === 'academy' ? '/academy' : '/student';
+    console.log('🚀 Redirecting to:', destination);
+    
+    window.location.href = destination;
+    
+  } catch (err) {
+    console.error('❌ Login error:', err);
+    const errorMessage = err.response?.data?.error || 'Login failed. Please check your credentials.';
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="auth-container">
